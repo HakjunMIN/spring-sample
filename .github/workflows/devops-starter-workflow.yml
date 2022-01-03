@@ -1,5 +1,8 @@
 name: Build and Deploy to AKS
-on: push
+on:
+  push:
+    branches:
+      - master
 
 env:
   RESOURCEGROUPNAME: "spring-sample-rg"
@@ -23,27 +26,10 @@ env:
 
 jobs:
   build:
-    name: Build and test
+    name: Build and push image to container registry
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: build and test
-      id: build-test
-      run: |
-          cd Application
-          ./mvnw compile test
-  
-  publish:
-    name: Publish to container registry
-    if: contains (github.ref, 'RC') || contains (github.ref, 'RELEASE')
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - uses: actions/checkout@v2
-    - name: pacakge war
-      run: |
-          cd Application
-          ./mvnw package
 
     # login to azure
     - name: Login to Azure
@@ -51,23 +37,23 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # - name: Create AKS Cluster
-    #   uses: azure/arm-deploy@v1
-    #   id: deploy
-    #   with:
-    #     scope: resourcegroup
-    #     subscriptionId: ${{ env.SUBSCRIPTIONID }}
-    #     resourceGroupName: ${{ env.RESOURCEGROUPNAME }}
-    #     template: ./ArmTemplates/aks-template.json
-    #     parameters: clusterName="${{ env.CLUSTERNAME }}" appInsightsLocation="${{ env.APPINSIGHTSLOCATION }}" clusterLocation="${{ env.CLUSTERLOCATION }}" agentCount="${{ env.AGENTCOUNT }}" agentVMSize="${{ env.AGENTVMSIZE }}" kubernetesVersion="${{ env.KUBERNETESVERSION }}" omsLocation="${{ env.OMSLOCATION }}" omsWorkspaceName="${{ env.OMSWORKSPACENAME }}" httpApplicationRoutingEnabled="${{ env.HTTPSAPPLICATIONROUTINGENABLED }}"  dnsPrefix="${{ env.CLUSTERNAME }}"
+    - name: Create AKS Cluster
+      uses: azure/arm-deploy@v1
+      id: deploy
+      with:
+        scope: resourcegroup
+        subscriptionId: ${{ env.SUBSCRIPTIONID }}
+        resourceGroupName: ${{ env.RESOURCEGROUPNAME }}
+        template: ./ArmTemplates/aks-template.json
+        parameters: clusterName="${{ env.CLUSTERNAME }}" appInsightsLocation="${{ env.APPINSIGHTSLOCATION }}" clusterLocation="${{ env.CLUSTERLOCATION }}" agentCount="${{ env.AGENTCOUNT }}" agentVMSize="${{ env.AGENTVMSIZE }}" kubernetesVersion="${{ env.KUBERNETESVERSION }}" omsLocation="${{ env.OMSLOCATION }}" omsWorkspaceName="${{ env.OMSWORKSPACENAME }}" httpApplicationRoutingEnabled="${{ env.HTTPSAPPLICATIONROUTINGENABLED }}"  dnsPrefix="${{ env.CLUSTERNAME }}"
 
-    # - name: Create ACR
-    #   id: createACR
-    #   run: |
-    #       az acr create -n ${{ env.REGISTRYNAME }} -g ${{ env.RESOURCEGROUPNAME }} --location "${{env.REGISTRYLOCATION}}" --sku ${{env.REGISTRYSKU}} --admin-enabled
-    #       echo "::set-output name=acr_username::`az acr credential show -n ${{ env.REGISTRYNAME }} --query username`"
-    #       echo "::set-output name=acr_password::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
-    #       echo "::add-mask::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
+    - name: Create ACR
+      id: createACR
+      run: |
+          az acr create -n ${{ env.REGISTRYNAME }} -g ${{ env.RESOURCEGROUPNAME }} --location "${{env.REGISTRYLOCATION}}" --sku ${{env.REGISTRYSKU}} --admin-enabled
+          echo "::set-output name=acr_username::`az acr credential show -n ${{ env.REGISTRYNAME }} --query username`"
+          echo "::set-output name=acr_password::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
+          echo "::add-mask::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
 
     - name: Build and push image to ACR
       id: build-image
@@ -77,12 +63,10 @@ jobs:
         docker build "$GITHUB_WORKSPACE/Application" -f  "Application/Dockerfile" -t ${{ env.REGISTRYNAME }}.azurecr.io/${{ env.IMAGENAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRYNAME }}.azurecr.io/${{ env.IMAGENAME }}:${{ github.sha }}
  
-  deploy-stage:
-    name: Deploy application to stage AKS 
-    if: contains (github.ref, 'RC')
-    needs: publish
+  deploy:
+    name: Deploy application to AKS
+    needs: build
     runs-on: ubuntu-latest
-    # if: contains(github.head_ref, 'feature') || contains(github.head_ref, 'release')
     steps:
     - uses: actions/checkout@v2
 
