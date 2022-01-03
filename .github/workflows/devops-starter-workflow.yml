@@ -27,11 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: build, test and package
+    - name: build and test
       id: build-test
       run: |
           cd Application
-          ./mvnw package
+          ./mvnw compile test
   
   publish:
     name: Publish to container registry
@@ -39,7 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    # - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - name: pacakge war
+      run: |
+          cd Application
+          ./mvnw package
 
     # login to azure
     - name: Login to Azure
@@ -47,23 +51,23 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Create AKS Cluster
-      uses: azure/arm-deploy@v1
-      id: deploy
-      with:
-        scope: resourcegroup
-        subscriptionId: ${{ env.SUBSCRIPTIONID }}
-        resourceGroupName: ${{ env.RESOURCEGROUPNAME }}
-        template: ./ArmTemplates/aks-template.json
-        parameters: clusterName="${{ env.CLUSTERNAME }}" appInsightsLocation="${{ env.APPINSIGHTSLOCATION }}" clusterLocation="${{ env.CLUSTERLOCATION }}" agentCount="${{ env.AGENTCOUNT }}" agentVMSize="${{ env.AGENTVMSIZE }}" kubernetesVersion="${{ env.KUBERNETESVERSION }}" omsLocation="${{ env.OMSLOCATION }}" omsWorkspaceName="${{ env.OMSWORKSPACENAME }}" httpApplicationRoutingEnabled="${{ env.HTTPSAPPLICATIONROUTINGENABLED }}"  dnsPrefix="${{ env.CLUSTERNAME }}"
+    # - name: Create AKS Cluster
+    #   uses: azure/arm-deploy@v1
+    #   id: deploy
+    #   with:
+    #     scope: resourcegroup
+    #     subscriptionId: ${{ env.SUBSCRIPTIONID }}
+    #     resourceGroupName: ${{ env.RESOURCEGROUPNAME }}
+    #     template: ./ArmTemplates/aks-template.json
+    #     parameters: clusterName="${{ env.CLUSTERNAME }}" appInsightsLocation="${{ env.APPINSIGHTSLOCATION }}" clusterLocation="${{ env.CLUSTERLOCATION }}" agentCount="${{ env.AGENTCOUNT }}" agentVMSize="${{ env.AGENTVMSIZE }}" kubernetesVersion="${{ env.KUBERNETESVERSION }}" omsLocation="${{ env.OMSLOCATION }}" omsWorkspaceName="${{ env.OMSWORKSPACENAME }}" httpApplicationRoutingEnabled="${{ env.HTTPSAPPLICATIONROUTINGENABLED }}"  dnsPrefix="${{ env.CLUSTERNAME }}"
 
-    - name: Create ACR
-      id: createACR
-      run: |
-          az acr create -n ${{ env.REGISTRYNAME }} -g ${{ env.RESOURCEGROUPNAME }} --location "${{env.REGISTRYLOCATION}}" --sku ${{env.REGISTRYSKU}} --admin-enabled
-          echo "::set-output name=acr_username::`az acr credential show -n ${{ env.REGISTRYNAME }} --query username`"
-          echo "::set-output name=acr_password::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
-          echo "::add-mask::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
+    # - name: Create ACR
+    #   id: createACR
+    #   run: |
+    #       az acr create -n ${{ env.REGISTRYNAME }} -g ${{ env.RESOURCEGROUPNAME }} --location "${{env.REGISTRYLOCATION}}" --sku ${{env.REGISTRYSKU}} --admin-enabled
+    #       echo "::set-output name=acr_username::`az acr credential show -n ${{ env.REGISTRYNAME }} --query username`"
+    #       echo "::set-output name=acr_password::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
+    #       echo "::add-mask::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value`"
 
     - name: Build and push image to ACR
       id: build-image
