@@ -57,6 +57,11 @@ jobs:
       run: |
           cd Application
           ./mvnw package
+    # login to azure
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Get ACR credentials
       id: getACRCred
@@ -64,12 +69,7 @@ jobs:
            echo "::set-output name=acr_username::`az acr credential show -n ${{ env.REGISTRYNAME }} --query username | xargs`"
            echo "::set-output name=acr_password::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value | xargs`"
            echo "::add-mask::`az acr credential show -n ${{ env.REGISTRYNAME }} --query passwords[0].value | xargs`"
-
-    # login to azure
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
     - name: Build and push image to ACR
       id: build-image
       run: |
