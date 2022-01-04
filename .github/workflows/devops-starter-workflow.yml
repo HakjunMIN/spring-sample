@@ -41,9 +41,11 @@ jobs:
         # Additional arguments to the sonar-scanner
         args: # optional
         # Set the sonar.projectBaseDir analysis property
-        projectBaseDir: Application      
-             
-  
+        projectBaseDir: Application    
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}     
+                  
   publish:
     name: Publish to container registry
     if: contains (github.ref, 'RC') || contains (github.ref, 'RELEASE')
