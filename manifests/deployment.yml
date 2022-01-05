@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: azurespring 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azurespring
+  template:
+    metadata:
+      labels:
+        app: azurespring 
+    spec:
+      containers:
+        - name: azurespring 
+          image: azurespringacr.azurecr.io/azurespring
+          ports:
+          - containerPort: 80
