@@ -54,6 +54,7 @@ stages:
           $(tag)
 
     - upload: manifests
+      condition: contains(variables['build.sourceBranch'], 'RC')
       artifact: manifests
 
 - stage: Deploy
