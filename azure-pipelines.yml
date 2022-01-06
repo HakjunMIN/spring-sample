@@ -23,8 +23,18 @@ variables:
 
 
 stages:
-- stage: Build
-  displayName: Build stage
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'Application/pom.xml'
+    publishJUnitResults: false
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '11'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
+- stage: DockerBuild
+  displayName: Docker Build stage
   jobs:
   - job: Build
     displayName: Build
@@ -46,7 +56,7 @@ stages:
 
 - stage: Deploy
   displayName: Deploy stage
-  dependsOn: Build
+  dependsOn: DockerBuild
 
   jobs:
   - deployment: Deploy
