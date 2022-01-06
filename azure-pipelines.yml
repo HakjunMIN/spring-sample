@@ -44,6 +44,7 @@ stages:
         sonarQubeRunAnalysis: false
     - task: Docker@2
       displayName: Build and push an image to container registry
+      condition: contains(variables['build.sourceBranch'], 'RC')
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -58,6 +59,7 @@ stages:
 - stage: Deploy
   displayName: Deploy stage
   dependsOn: Build
+  condition: contains(variables['build.sourceBranch'], 'RC')
 
   jobs:
   - deployment: Deploy
