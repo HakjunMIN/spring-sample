@@ -156,7 +156,7 @@ class ClinicServiceTests {
 		owner6.addPet(pet);
 		assertThat(owner6.getPets().size()).isEqualTo(found + 1);
 
-		this.owners.save(owner6);
+		// this.owners.save(owner6);
 
 		owner6 = this.owners.findById(6);
 		assertThat(owner6.getPets().size()).isEqualTo(found + 1);
@@ -201,7 +201,7 @@ class ClinicServiceTests {
 		Visit visit = new Visit();
 		pet7.addVisit(visit);
 		visit.setDescription("test");
-		this.owners.save(owner6);
+		// this.owners.save(owner6);
 
 		owner6 = this.owners.findById(6);
 		assertThat(pet7.getVisits().size()).isEqualTo(found + 1);
