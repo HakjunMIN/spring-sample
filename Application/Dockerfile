@@ -1,7 +1,8 @@
-FROM mcr.microsoft.com/java/maven:8u192-zulu-debian9 AS build-env
-WORKDIR /app
-COPY . /app
-# RUN mvn package
+FROM mcr.microsoft.com/java/jre-headless:11-zulu-ubuntu
 
-COPY /app/target/*.jar /app.jar
+ENV POSTGRES_URL=
+ENV POSTGRES_USER=
+ENV POSTGRES_PASS=
+
+COPY ./target/*.jar /app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
