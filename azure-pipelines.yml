@@ -43,12 +43,12 @@ stages:
       inputs:
         azureSubscription: 'keyvault'                    ## YOUR_SERVICE_CONNECTION_NAME
         KeyVaultName: 'andy-cert-keyvault'                         ## YOUR_KEY_VAULT_NAME
-        SecretsFilter: 'postgres-url'                          ## YOUR_SECRET_NAME. Default value: *
+        SecretsFilter: 'postgres-url, postgres-user, postgres-pass'                      ## YOUR_SECRET_NAME. Default value: *
         RunAsPreJob: false                                   ## Make the secret(s) available to the whole job
-    - bash: |
-        echo "Secret Found! $MY_MAPPED_ENV_VAR"        
-      env:
-        MY_MAPPED_ENV_VAR: $(postgres-url)
+    # - bash: |
+    #     echo "Secret Found! $MY_MAPPED_ENV_VAR"        
+    #   env:
+    #     MY_MAPPED_ENV_VAR: $(postgres-url)
 
     - task: Cache@2
       displayName: Cache Maven local repo  
@@ -66,7 +66,7 @@ stages:
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: 1.11
         mavenVersionOption: 'Default'
-        mavenOptions: '$(MAVEN_OPTS)'
+        mavenOptions: '-DPOSTGRES_URL=$(postgres-url) -DPOSTGRES_USER=$(postgres-user) -DPOSTGRES_PASS=$(postgres-pass) $(MAVEN_OPTS)'
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
