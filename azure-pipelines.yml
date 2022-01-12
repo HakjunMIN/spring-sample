@@ -59,9 +59,11 @@ stages:
       inputs:
         SonarQube: 'sonarqube-local'
         scannerMode: CLI
-        configFile: 'Application/sonar-project.properties'
+        # configFile: 'Application/sonar-project.properties'
         extraProperties: |
           sonar.branch.name=$('build.sourceBranch')
+          sonar.sources=Application/src/main/java
+          sonar.java.binaries=Application/target/classes
         # Additional properties that will be passed to the scanner, 
         # Put one key=value per line, example:
         # sonar.exclusions=**/*.bin  
