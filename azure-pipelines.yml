@@ -61,6 +61,7 @@ stages:
         scannerMode: CLI
         configFile: 'Application/sonar-project.properties'
         extraProperties: |
+          sonar.branch.name=$('build.sourceBranch')
         # Additional properties that will be passed to the scanner, 
         # Put one key=value per line, example:
         # sonar.exclusions=**/*.bin  
