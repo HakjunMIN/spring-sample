@@ -62,10 +62,10 @@ stages:
         # configFile: 'Application/sonar-project.properties'
         extraProperties: |
           sonar.projectKey=azure-spring
-          sonar.branch.name=$('build.sourceBranch')
+          sonar.branch.name=$(variables['Build.SourceBranchName'])
           sonar.sources=Application/src/main/java
           sonar.java.binaries=Application/target/classes
-            
+
     - task: Maven@3
       displayName: Maven Build
       inputs:
