@@ -54,6 +54,20 @@ stages:
           maven | "$(Agent.OS)"
           maven
         path: $(MAVEN_CACHE_FOLDER) 
+
+    - task: SonarQubePrepare@4
+      inputs:
+        SonarQube: 'sonarqube-local'
+        scannerMode: CLI
+        configFile: 'Application/sonar-project.properties'
+        extraProperties: |
+        # Additional properties that will be passed to the scanner, 
+        # Put one key=value per line, example:
+        # sonar.exclusions=**/*.bin  
+    
+    - task: SonarSource.sonarqube.6D01813A-9589-4B15-8491-8164AEB38055.SonarQubeAnalyze@5
+      displayName: 'Run Code Analysis'    
+
     - task: Maven@3
       displayName: Maven Build
       inputs:
