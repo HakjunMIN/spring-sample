@@ -62,7 +62,7 @@ stages:
         # configFile: 'Application/sonar-project.properties'
         extraProperties: |
           sonar.projectKey=azure-spring
-          sonar.branch.name=$(variables['Build.SourceBranchName'])
+          sonar.branch.name="feature/refactor-app"
           sonar.sources=Application/src/main/java
           sonar.java.binaries=Application/target/classes
 
@@ -81,6 +81,7 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         options: '-DPOSTGRES_URL=$(postgres-url) -DPOSTGRES_USER=$(postgres-user) -DPOSTGRES_PASS=$(postgres-pass)'
+        goals: "-B package"
     - task: SonarSource.sonarqube.6D01813A-9589-4B15-8491-8164AEB38055.SonarQubeAnalyze@5
       displayName: 'Run Code Analysis'        
     - task: Docker@2
