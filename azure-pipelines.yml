@@ -79,12 +79,10 @@ stages:
         mavenOptions: '$(MAVEN_OPTS)'
         goals: "-B sonar:sonar"
         options: "-Dsonar.projectKey=azure-spring -Dsonar.host.url=$(sonar-url) -Dsonar.login=$(sonar-token)"
-
-    # - task: SonarSource.sonarqube.6D01813A-9589-4B15-8491-8164AEB38055.SonarQubeAnalyze@5
-    #   displayName: 'Run Code Analysis'        
+    
     - task: Docker@2
       displayName: Build and push an image to container registry
-      condition: contains(variables['build.sourceBranch'], 'RC')
+      condition: OR(contains(variables['build.sourceBranch'], 'RC'), contains(variables['build.sourceBranch'], 'RELEASE'))
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
