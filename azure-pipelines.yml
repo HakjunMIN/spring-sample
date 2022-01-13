@@ -55,16 +55,6 @@ stages:
           maven
         path: $(MAVEN_CACHE_FOLDER) 
 
-    - task: SonarQubePrepare@4
-      inputs:
-        SonarQube: 'sonarqube-local'
-        scannerMode: CLI
-        # configFile: 'Application/sonar-project.properties'
-        extraProperties: |
-          sonar.projectKey=azure-spring
-          sonar.sources=Application/src/main/java
-          sonar.java.binaries=Application/target/classes
-
     - task: Maven@3
       displayName: Maven Build
       inputs:
@@ -86,8 +76,8 @@ stages:
       displayName: Static Analysis on SonarQube
       inputs:     
         mavenPomFile: 'Application/pom.xml'
-        goals: "sonar:sonar"
-        options: "Dsonar.projectKey=azure-spring -Dsonar.host.url=$(sonar-url) -Dsonar.login=$(sonar-token)"
+        goals: "-B sonar:sonar"
+        options: "-Dsonar.projectKey=azure-spring -Dsonar.host.url=$(sonar-url) -Dsonar.login=$(sonar-token)"
 
     # - task: SonarSource.sonarqube.6D01813A-9589-4B15-8491-8164AEB38055.SonarQubeAnalyze@5
     #   displayName: 'Run Code Analysis'        
