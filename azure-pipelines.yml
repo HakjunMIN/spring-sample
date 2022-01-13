@@ -94,20 +94,20 @@ stages:
           $(tag)
 
     - upload: manifests
-      condition: contains(variables['build.sourceBranch'], 'RC')
+      condition: OR(contains(variables['build.sourceBranch'], 'RC'), contains(variables['build.sourceBranch'], 'RELEASE'))
       artifact: manifests
 
 - stage: Deploy
   displayName: Deploy stage
   dependsOn: Build
-  condition: contains(variables['build.sourceBranch'], 'RC')
+  condition: OR(contains(variables['build.sourceBranch'], 'RC'), contains(variables['build.sourceBranch'], 'RELEASE'))
 
   jobs:
   - deployment: Deploy
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: 'azurespring-1954.staged48e'
+    environment: 'stage.staged48e'
     strategy:
       runOnce:
         deploy:
@@ -125,9 +125,45 @@ stages:
               action: deploy
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/secretproviderclass.yml
                 $(Pipeline.Workspace)/manifests/service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: Deploy production
+  displayName: Deploy production
+  dependsOn: Build
+  condition: contains(variables['build.sourceBranch'], 'RELEASE')
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'prod.prodd82'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/secretproviderclass.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)                
 
