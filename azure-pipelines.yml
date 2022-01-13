@@ -76,6 +76,7 @@ stages:
       displayName: Static Analysis on SonarQube
       inputs:     
         mavenPomFile: 'Application/pom.xml'
+        mavenOptions: '$(MAVEN_OPTS)'
         goals: "-B sonar:sonar"
         options: "-Dsonar.projectKey=azure-spring -Dsonar.host.url=$(sonar-url) -Dsonar.login=$(sonar-token)"
 
