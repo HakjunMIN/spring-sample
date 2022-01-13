@@ -63,7 +63,6 @@ stages:
         # configFile: 'Application/sonar-project.properties'
         extraProperties: |
           sonar.projectKey=azure-spring
-          sonar.branch.name="feature/refactor-app"
           sonar.sources=Application/src/main/java
           sonar.java.binaries=Application/target/classes
 
